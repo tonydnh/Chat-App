@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Combine
 
 struct VerificationView: View {
     
@@ -35,6 +36,10 @@ struct VerificationView: View {
                 HStack {
                     TextField("", text: $verificationCode)
                         .font(Font.bodyParagraph)
+                        .keyboardType(.numberPad)
+                        .onReceive(Just(verificationCode)) { _ in
+                            TextHelper.limitText(&verificationCode, 6)
+                        }
                     
                     Spacer()
                     
@@ -56,15 +61,26 @@ struct VerificationView: View {
             Spacer()
             
             Button {
-                // Next step
-                currentStep = .profile
+                // Send the verification code to Firebase
+                AuthViewModel.verifyCode(code: verificationCode) { error in
+                    
+                    // Check for errors
+                    if error == nil {
+                        // Move to the next step
+                        currentStep = .profile
+                    }
+                    else {
+                        // TODO: Show error message
+                    }
+                    
+                }
                 
             } label: {
                 Text("Next")
             }
             .buttonStyle(OnboardingButtonStyle())
             .padding(.bottom, 87)
-
+            
             
         }
         .padding(.horizontal)
